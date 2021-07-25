@@ -21,7 +21,7 @@ const useStyles = makeStyles({
     }
 });
 
-export const AddModal = ({lastId, openModal, closeModal, addCountry}) => {
+export const AddModal = ({lastId, displayFunction, openModal, closeModal, addCountry}) => {
 
     const classes = useStyles();
     
@@ -38,14 +38,12 @@ export const AddModal = ({lastId, openModal, closeModal, addCountry}) => {
     };
     
     const [formValues, setFormValues] = useState(initialValues);
-    const [locales, setLocales] = useState("en-US");
     const [symbol, setSymbol] = useState(true);
     const [cents, setCents] = useState(true);
     const [country, setCountry] = useState("");
     const [position, setPosition] = useState("before");
     const [format, setFormat] = useState("comma");
     const [display, setDisplay] = useState("12345");
-    const [options, setOptions] = useState({style: "currency", currency: "ARS", minimumFractionDigits: 2, maximumFractionDigits: 2});
 
     var isValid = false;
     if(formValues.country && formValues.country!==undefined){
@@ -55,34 +53,25 @@ export const AddModal = ({lastId, openModal, closeModal, addCountry}) => {
     }
 
     useEffect(() => {
-        var str = "";
         var string = "1234.5";
-        var num = "";
         var symb = symbol? formValues.symbol : formValues.currency;
-        if(cents){
-            if(format==="comma"){
-                num = parseFloat(string).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            }else{
-                num = parseFloat(string).toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            }
-        }else{
-            if(format==="comma"){
-                num = parseInt(string).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
-            }else{
-                num = parseInt(string).toLocaleString('tr-TR', {minimumFractionDigits: 0, maximumFractionDigits: 0});
-            }
-        }
-        if(position==="before"){
-            str = symb + num;
-        }else{ 
-            str = num + symb;
-        }
-        setDisplay(str.trim());
-    },[format, symbol, position, cents, formValues.symbol, formValues.currency]);
+
+        var str = displayFunction(string, cents, format, position, symb);
+
+        setDisplay(str);
+    },[format, symbol, position, cents, formValues.symbol, formValues.currency, displayFunction]);
 
     const handleChange = (e) => {
         var { name, value } = e.target;
 
+        if(name==="showSymbol"){
+            value = !symbol;
+            setSymbol(!symbol);
+        }
+        if(name==="cents"){
+            value = !cents;
+            setCents(!cents);
+        }
         if(name==="country"){
             const countryArray = value.split(" - ");
             setCountry(value);
@@ -97,14 +86,6 @@ export const AddModal = ({lastId, openModal, closeModal, addCountry}) => {
             ...prev,
             [name]: value
             }));
-        }
-
-        if(name==="showSymbol"){
-            setSymbol(!symbol);
-        }
-        if(name==="cents"){
-            value = !cents;
-            setCents(!cents);
         }
         if(name==="position"){
             setPosition(value);

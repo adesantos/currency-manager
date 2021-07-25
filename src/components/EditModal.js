@@ -21,7 +21,7 @@ const useStyles = makeStyles({
     }
 });
 
-export const EditModal = ({item, openModal, closeModal, editCountry}) => {
+export const EditModal = ({item, displayFunction, openModal, closeModal, editCountry}) => {
 
     const classes = useStyles();
     
@@ -58,33 +58,16 @@ export const EditModal = ({item, openModal, closeModal, editCountry}) => {
     }, [item]);
 
     useEffect(() => {
-        var str = "";
         var string = "1234.5";
-        var num = "";
         var symb = symbol? formValues.symbol : formValues.currency;
-        if(cents){
-            if(format==="comma"){
-                num = parseFloat(string).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            }else{
-                num = parseFloat(string).toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            }
-        }else{
-            if(format==="comma"){
-                num = parseInt(string).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
-            }else{
-                num = parseInt(string).toLocaleString('tr-TR', {minimumFractionDigits: 0, maximumFractionDigits: 0});
-            }
-        }
-        if(position==="before"){
-            str = symb + num;
-        }else{ 
-            str = num + symb;
-        }
-        setDisplay(str.trim());
-        formValues.display = str.trim();
-    },[format, symbol, position, cents, formValues.symbol, formValues.currency]);
+
+        var str = displayFunction(string, cents, format, position, symb);
+
+        setDisplay(str);
+    },[format, symbol, position, cents, formValues.symbol, formValues.currency, displayFunction]);
 
     var isValid = false;
+
     if(formValues.country!==undefined){
         isValid = formValues.country.length > 0 &&
         formValues.currency.length > 0 &&
@@ -94,6 +77,14 @@ export const EditModal = ({item, openModal, closeModal, editCountry}) => {
     const handleChange = (e) => {
         var { name, value } = e.target;
 
+        if(name==="showSymbol"){
+            value = !symbol;
+            setSymbol(!symbol);
+        }
+        if(name==="cents"){
+            value = !cents;
+            setCents(!cents);
+        }
         if(name==="country"){
             const countryArray = value.split(" - ");
             setCountry(value);
@@ -107,14 +98,6 @@ export const EditModal = ({item, openModal, closeModal, editCountry}) => {
             ...prev,
             [name]: value
             }));
-        }
-
-        if(name==="showSymbol"){
-            setSymbol(!symbol);
-        }
-        if(name==="cents"){
-            value = !cents;
-            setCents(!cents);
         }
         if(name==="position"){
             setPosition(value);

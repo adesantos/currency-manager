@@ -17,7 +17,7 @@ const data = [
     id: 0, country: 'United States of America', currency: 'USD', symbol: '$', display: '$1,234.56', showSymbol: true , position: 'before', cents: true, format: 'comma'
   },
   {
-    id: 1, country: 'Spain', currency: 'EUR', symbol: '€', display: '1,234.56€', showSymbol: true , position: 'after', cents: false, format: 'comma'
+    id: 1, country: 'Spain', currency: 'EUR', symbol: '€', display: '1,234€', showSymbol: true , position: 'after', cents: false, format: 'comma'
   }
 ];
 
@@ -76,6 +76,41 @@ function App() {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [row, setRow] = useState({});
 
+  const displayFunction = (string, cents, format, position, symb) => {
+    var str = "";
+    var num = "";
+    if(cents){
+      if(format==="comma"){
+          num = parseFloat(string).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      }else{
+          num = parseFloat(string).toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      }
+    }else{
+        if(format==="comma"){
+            num = parseInt(string).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+        }else{
+            num = parseInt(string).toLocaleString('tr-TR', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+        }
+    }
+    if(position==="before"){
+        str = symb + num;
+    }else{ 
+        str = num + symb;
+    }
+    return str.trim();
+  }
+
+  const display = (setting) => {
+    const {cents, format, position, symbol, showSymbol, currency} = setting;
+    var str = "";
+    var string = "1234.5";
+    var symb = showSymbol? symbol : currency;
+    
+    str = displayFunction(string, cents, format, position, symb);
+
+    return str;
+  }
+
   const handleAddModal = () => {
     setOpenAddModal(true);
   };
@@ -87,7 +122,7 @@ function App() {
 
   const handleDelete = (item) => {
     var tempCountries = countries.filter(country => {
-      return country.id != item;
+      return country.id !== item;
     });
     setCountries(tempCountries);
   }
@@ -99,7 +134,7 @@ function App() {
 
   const handleEditCountry = (item) => {
     var tempCountries = countries;
-    var index = tempCountries.findIndex((obj => obj.id == item.id));
+    var index = tempCountries.findIndex((obj => obj.id === item.id));
     tempCountries[index] = item;
     setCountries(tempCountries);
   }
@@ -166,14 +201,14 @@ function App() {
           </Grid>
         </Toolbar>
 
-        <AddModal lastId={countries.length} openModal={openAddModal} closeModal={handleCloseModal} addCountry={handleNewCountry}/>
+        <AddModal lastId={countries.length} displayFunction={displayFunction} openModal={openAddModal} closeModal={handleCloseModal} addCountry={handleNewCountry}/>
 
-        <EditModal item={row} openModal={openEditModal} closeModal={handleCloseModal} editCountry={handleEditCountry}/>
+        <EditModal item={row} displayFunction={displayFunction} openModal={openEditModal} closeModal={handleCloseModal} editCountry={handleEditCountry}/>
 
 
         <TableContainer className={classes.tableContainer} component={Paper}>
 
-            <Table aria-label="customized table" className={classes.table} aria-label="simple table">
+            <Table aria-label="Countries Table" className={classes.table}>
 
                 <TableHead className={classes.theader}>
                   <TableRow>
@@ -190,7 +225,7 @@ function App() {
                     <TableRow key={row.id}>
                       <TableCell align="center">{row.country}</TableCell>
                       <TableCell align="center">{row.currency}</TableCell>
-                      <TableCell align="center">{row.display}</TableCell>
+                      <TableCell align="center">{display(row)}</TableCell>
                       <TableCell align="center"><EditIcon className={classes.btn} onClick={() => handleEdit(row)} /></TableCell>
                       <TableCell align="center"><DeleteOutlineOutlinedIcon className={classes.btn} onClick={() => handleDelete(row.id)}/></TableCell>
                     </TableRow>
